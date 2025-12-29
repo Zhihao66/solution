@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>溶液配制计算器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>溶液配制计算器</h1>
+
+    <div class="tabs">
+      <button class="tabBtn active" data-tab="calcTab">计算器</button>
+      <button class="tabBtn" data-tab="dbTab">溶质数据库</button>
+    </div>
+
+    <section id="calcTab" class="card tabContent" style="display:block">
+      <h2>输入</h2>
+      <label>溶质名称
+        <input id="soluteName" list="soluteList" placeholder="例如 NaCl（可留空，默认 未填写）" autocomplete="off" />
+        <datalist id="soluteList">
+          <option value="NaCl">
+          <option value="KCl">
+          <option value="Glucose">
+          <option value="NaOH">
+          <option value="Tris">
+          <option value="CaCl2">
+        </datalist>
+      </label>
+
+      <label>摩尔质量 (g/mol)
+        <input id="molarMass" type="number" step="any" placeholder="例如 58.44（支持小数，可手动覆盖）" />
+      </label>
+
+      <label>水合物
+        <div class="row">
+          <input id="hydrateCount" type="number" min="0" step="1" value="0" />
+          <div style="align-self:center;margin-left:6px;color:#475569">X H2O（整数，示例：1 表示一水合物）</div>
+        </div>
+      </label>
+
+      <div id="computedMw" style="color:#065f46;margin-top:6px;display:none">计算摩尔质量：<span id="computedMwVal"></span> g/mol</div>
+
+      <label>目标浓度
+        <div class="row">
+          <input id="concValue" type="number" step="any" placeholder="数值" />
+          <select id="concUnit">
+            <option value="M">M (mol/L)</option>
+            <option value="mM">mM (mmol/L)</option>
+            <option value="μM">μM (μmol/L)</option>
+            <option value="g/L">g/L</option>
+            <option value="mg/L">mg/L</option>
+            <option value="μg/L">μg/L</option>
+            <option value="%">% w/v</option>
+            <option value="ppm">ppm</option>
+            <option value="ppb">ppb</option>
+          </select>
+        </div>
+      </label>
+
+      <label>目标体积
+        <div class="row">
+          <input id="volValue" type="number" step="any" placeholder="数值" />
+          <select id="volUnit">
+            <option value="L">L</option>
+            <option value="mL">mL</option>
+          </select>
+        </div>
+      </label>
+
+      <!-- 显著数字功能已移除：使用默认格式显示结果 -->
+
+      <label>模式
+        <select id="mode">
+          <option value="solid">从固体配制（称量）</option>
+          <option value="dilute">由母液稀释（C1V1=C2V2）</option>
+        </select>
+      </label>
+
+      <div id="stockSection" style="display:none;">
+        <label>母液浓度
+          <div class="row">
+            <input id="stockConcValue" type="number" step="any" placeholder="数值" />
+            <select id="stockConcUnit">
+              <option value="M">M</option>
+              <option value="mM">mM</option>
+              <option value="μM">μM</option>
+              <option value="g/L">g/L</option>
+              <option value="mg/L">mg/L</option>
+            </select>
+          </div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn">计算</button>
+        <button id="clearBtn">清除</button>
+      </div>
+
+      <div id="message" aria-live="polite" style="margin-top:8px;color:#b91c1c"></div>
+      <pre id="result" style="background:#f0f4f8;padding:12px;border-radius:4px;margin-top:12px;color:#111;white-space:pre-wrap;word-wrap:break-word">—</pre>
+      
+      <div id="stepsContainer" style="display:none;margin-top:16px">
+        <h3 style="margin:0 0 12px 0">配制步骤指南</h3>
+        <div id="steps" style="background:#f9fafb;padding:12px;border-left:4px solid #2563eb;border-radius:4px;white-space:pre-wrap;word-wrap:break-word;font-size:0.95rem;line-height:1.6;color:#1f2937"></div>
+        <button id="printBtn" style="margin-top:10px;background:#059669">打印/导出 PDF</button>
+      </div>
+    </section>
+
+    <section id="dbTab" class="card tabContent" style="display:none">
+      <h2>溶质数据库管理</h2>
+      <p style="margin-top:0;color:#475569">支持以纯文本（CSV/TSV/每行一条）批量导入（后台解析），或逐条添加。前端不显示原始 JSON。</p>
+
+      <label>从文件导入（CSV/TSV 或 每行 name,mw,solubility_g_per_L）
+        <input id="dbFile" type="file" accept=".txt,.csv,.tsv,.json" />
+      </label>
+      <div class="actions" style="margin-top:6px">
+        <button id="importFileBtn">导入文件</button>
+        <button id="exportDbBtn">导出 JSON</button>
+        <button id="resetDbBtn">恢复默认</button>
+      </div>
+
+      <hr style="margin:12px 0" />
+      <h3 style="margin:6px 0">逐条添加溶质</h3>
+      <div class="row">
+        <input id="dbName" placeholder="名称，例如 NaCl" />
+        <input id="dbMw" placeholder="摩尔质量 g/mol" />
+        <input id="dbSolubility" placeholder="溶解度 g/L（可选）" />
+        <input id="dbHydrate" placeholder="默认水合物 X（整数，可选）" />
+        <button id="addEntryBtn">添加</button>
+      </div>
+
+      <p style="margin:8px 0;color:#475569">当前数据库条目（表格形式）：</p>
+      <div style="overflow:auto;max-height:220px">
+        <table id="dbTable" style="width:100%;border-collapse:collapse">
+          <thead><tr><th style="text-align:left">名称</th><th style="text-align:left">MW (g/mol)</th><th style="text-align:left">溶解度 (g/L)</th><th style="text-align:left">默认水合物</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="dbMsg" style="color:#b91c1c;margin-top:8px"></p>
+    </section>
+
+    <footer>
+      <small>支持多种单位转换、溶质数据库管理、溶解度检查和可打印的配制步骤指南。</small>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

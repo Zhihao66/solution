@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+# Backup folders
+backup_*/
+# Node / general
+node_modules/
+.env
+# VSCode
+.vscode/
+# Python
+__pycache__/
+*.pyc
+
+# local browser storage dumps
+*.localstorage
